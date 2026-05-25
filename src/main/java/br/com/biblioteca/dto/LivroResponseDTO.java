@@ -9,7 +9,6 @@ public record LivroResponseDTO(
     String isbn,
     Integer anoPublicacao,
     GeneroEnum genero,
-    Long autorId,
     String autorNome
 ) {
     public LivroResponseDTO(Livro livro){
@@ -18,7 +17,6 @@ public record LivroResponseDTO(
         livro.getIsbn(),
         livro.getAnoPublicacao(),
         livro.getGenero(),
-        livro.getAutor().getId(),//Preciso acessar autor antes e depois acesso id.
         livro.getAutor().getNome()//acesso autor antes e depois o nome.
         );
     }
