@@ -1,6 +1,5 @@
 package br.com.biblioteca.dto;
 
-import br.com.biblioteca.enums.GeneroEnum;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,7 +20,10 @@ public record LivroRequestDTO(
      Integer anoPublicacao,
 
      @NotNull(message = "Gênero não pode ser nulo.")
-     GeneroEnum genero,
+     Long generoId,
+
+     @NotNull(message = "Editora não pode ser nulo.")
+     Long editoraId,
 
      @NotNull(message = "Autor é obrigatório.")
      Long autorId

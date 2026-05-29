@@ -8,11 +8,16 @@ import org.springframework.stereotype.Service;
 import br.com.biblioteca.dto.LivroRequestDTO;
 import br.com.biblioteca.dto.LivroResponseDTO;
 import br.com.biblioteca.entity.Autor;
+import br.com.biblioteca.entity.Editora;
+import br.com.biblioteca.entity.Genero;
 import br.com.biblioteca.entity.Livro;
 import br.com.biblioteca.exceptions.ApiException;
 import br.com.biblioteca.exceptions.ErroEnum;
 import br.com.biblioteca.repository.AutorRepository;
+import br.com.biblioteca.repository.EditoraRepository;
+import br.com.biblioteca.repository.GeneroRepository;
 import br.com.biblioteca.repository.LivroRepository;
+
 
 @Service
 public class LivroService {
@@ -22,6 +27,15 @@ public class LivroService {
     @Autowired
     private AutorRepository autorRepository;
 
+    @Autowired
+    private GeneroRepository generoRepository;
+
+    @Autowired
+    private EditoraRepository editoraRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     //(Post)
     public LivroResponseDTO inserir (LivroRequestDTO livroRequest){
         if(livroRepository.existsByIsbn(livroRequest.isbn())){
@@ -29,16 +43,23 @@ public class LivroService {
         }
         Autor autor = autorRepository.findById(livroRequest.autorId()).orElseThrow(() -> new ApiException(ErroEnum.AUTOR_INVALIDO));
 
+        Genero genero = generoRepository.findById(livroRequest.generoId()).orElseThrow(() -> new ApiException(ErroEnum.GENERO_INVALIDO));
+
+        Editora editora = editoraRepository.findById(livroRequest.editoraId()).orElseThrow(() -> new ApiException(ErroEnum.EDITORA_INVALIDA));
+
         Livro livro = new Livro(
             livroRequest.titulo(),
             livroRequest.isbn(),
             livroRequest.anoPublicacao(),
-            livroRequest.genero(),
+            genero,
+            editora,
             autor
         );
-        Livro livroSalvo = livroRepository.save(livro);
-    
-        return new LivroResponseDTO(livroSalvo);
+        LivroResponseDTO response = new LivroResponseDTO(livroRepository.save(livro));
+
+        emailService.enviarEmailCadastroLivro(response);
+        //Livro livroSalvo = livroRepository.save(livro);
+           return response;
     }
     //buscar livro por id(get)
     public LivroResponseDTO buscar(Long id){
@@ -49,23 +70,35 @@ public class LivroService {
     public List<LivroResponseDTO> listar(){
         return livroRepository.findAll().stream().map(LivroResponseDTO::new).toList();
     }
-    //atualizar LIVRO(PUT)
+    // LIVRO(PUT)
     public LivroResponseDTO atualizar(Long id, LivroRequestDTO livroRequest){
         Livro livroExistente = livroRepository.findById(id).orElseThrow(() -> new ApiException(ErroEnum.LIVRO_NAO_ENCONTRADO));
 
         Autor autor = autorRepository.findById(livroRequest.autorId()).orElseThrow(() -> new ApiException(ErroEnum.AUTOR_INVALIDO));
 
+        Genero genero = generoRepository.findById(livroRequest.generoId()).orElseThrow(() -> new ApiException(ErroEnum.GENERO_INVALIDO));
+
+        Editora editora = editoraRepository.findById(livroRequest.editoraId()).orElseThrow(() -> new ApiException(ErroEnum.EDITORA_INVALIDA));
+
         livroExistente.setTitulo(livroRequest.titulo());
         livroExistente.setIsbn(livroRequest.isbn());
         livroExistente.setAnoPublicacao(livroRequest.anoPublicacao());
-        livroExistente.setGenero(livroRequest.genero());
+
+        livroExistente.setGenero(genero);
         livroExistente.setAutor(autor);
-         Livro livroAtualizado = livroRepository.save(livroExistente);
-         return new LivroResponseDTO(livroAtualizado);
+        livroExistente.setEditora(editora);
+
+        LivroResponseDTO response = new LivroResponseDTO(livroRepository.save(livroExistente));
+
+        emailService.enviarEmailAtualizacaoLivro(response);
+        return response;
+         //Livro livroAtualizado = livroRepository.save(livroExistente);
     }
     // deletar um livro(DELETE)
     public void deletar(Long id){
-         livroRepository.findById(id).orElseThrow(() -> new ApiException(ErroEnum.LIVRO_NAO_ENCONTRADO));
-        livroRepository.deleteById(id);;
+        Livro livro = livroRepository.findById(id).orElseThrow(() -> new ApiException(ErroEnum.LIVRO_NAO_ENCONTRADO));
+         LivroResponseDTO response = new LivroResponseDTO(livro);
+        livroRepository.deleteById(id);
+        emailService.enviarEmailExclusaoLivro(response);
     }
 }

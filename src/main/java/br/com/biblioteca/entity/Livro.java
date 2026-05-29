@@ -2,12 +2,8 @@ package br.com.biblioteca.entity;
 
 
 
-
-import br.com.biblioteca.enums.GeneroEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,23 +31,27 @@ public class Livro {
     @Column(name = "ano_publicacao")
     private Integer anoPublicacao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "genero")
-    private GeneroEnum genero;
-   
-
    @ManyToOne(fetch = FetchType.EAGER)// esse livro pertence a um autor
    @JoinColumn(name = "id_autor", nullable = false)//coluna da chave estrangeira
     private Autor autor;
 
+   @ManyToOne(fetch = FetchType.EAGER)
+   @JoinColumn(name = "id_genero", nullable = false)
+   private Genero genero;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_editora", nullable = false)
+    private Editora editora;
+
     public Livro(){}
 
      // construtor recebendo RequestDTO e Autor para o Service ficar mais limpo
-    public Livro(String titulo, String isbn, Integer anoPublicacao, GeneroEnum genero, Autor autor){
+    public Livro(String titulo, String isbn, Integer anoPublicacao, Genero genero, Editora editora, Autor autor){
        this.titulo = titulo;
        this.isbn = isbn;
        this.anoPublicacao = anoPublicacao;
        this.genero = genero;
+       this.editora = editora;
         this.autor = autor;
     }
 
@@ -87,11 +87,11 @@ public class Livro {
         this.anoPublicacao = anoPublicacao;
     }
 
-    public GeneroEnum getGenero() {
+    public Genero getGenero() {
         return genero;
     }
 
-    public void setGenero(GeneroEnum genero) {
+    public void setGenero(Genero genero) {
         this.genero = genero;
     }
 
@@ -101,6 +101,14 @@ public class Livro {
 
     public void setAutor(Autor autor) {
         this.autor = autor;
+    }
+
+    public Editora getEditora() {
+        return editora;
+    }
+
+    public void setEditora(Editora editora) {
+        this.editora = editora;
     }
 
 

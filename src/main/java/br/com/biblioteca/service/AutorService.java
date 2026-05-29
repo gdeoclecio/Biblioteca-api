@@ -11,12 +11,16 @@ import br.com.biblioteca.entity.Autor;
 import br.com.biblioteca.exceptions.ApiException;
 import br.com.biblioteca.exceptions.ErroEnum;
 import br.com.biblioteca.repository.AutorRepository;
+import br.com.biblioteca.repository.LivroRepository;
 
 
 @Service
 public class AutorService {
     @Autowired
     private AutorRepository autorRepository;
+
+    @Autowired
+    private LivroRepository livroRepository;
 
 
     //(Post)
@@ -65,8 +69,8 @@ public class AutorService {
     //Deletar autor(DELETE)
     public void deletar(Long id){
         
-       Autor autor = autorRepository.findById(id).orElseThrow(() -> new ApiException(ErroEnum.AUTOR_NAO_ENCONTRADO));
-        if (!autor.getLivros().isEmpty()) {
+       autorRepository.findById(id).orElseThrow(() -> new ApiException(ErroEnum.AUTOR_NAO_ENCONTRADO));
+        if (livroRepository.existsByAutorId(id)) {
             throw new ApiException(ErroEnum.AUTOR_POSSUI_LIVROS);
         }
         autorRepository.deleteById(id);
